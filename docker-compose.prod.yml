@@ -1,0 +1,18 @@
+services:
+  customer-service-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: customer-service-agent:latest
+    container_name: customer-service-agent
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      LOG_LEVEL: INFO
+    ports:
+      - "8000:8000"
+    # 如果后续需要模型缓存持久化，可启用如下挂载：
+    # volumes:
+    #   - ./data/hf-cache:/home/appuser/.cache/huggingface

@@ -1,4 +1,4 @@
-# CustomerServiceAgent 项目架构
+# 一、CustomerServiceAgent 项目架构
 
 ## 详细目录结构（规划）
 
@@ -117,6 +117,273 @@
 └── requirements-atguigu.txt       # 依赖列表
 ```
 
+## 模块关系图
+
+```mermaid
+flowchart TB
+    subgraph ENTRY["入口层"]
+        direction LR
+        CLI[cli/]
+        API[api/server.py]
+        CLI --- API
+    end
+
+    subgraph AGENT["Agent层"]
+        direction TB
+        AG[agent/agent.py]
+        AC[agent/actions.py]
+        GR[agent/graph/]
+    end
+
+    subgraph UNDERSTAND["理解层"]
+        direction TB
+        DU[dialogue_understanding/]
+        CMD[command/]
+        GEN[generator/]
+        PROC[processor/]
+    end
+
+    subgraph POLICY["决策层"]
+        direction TB
+        POL[policy/]
+        FP[flow_policy.py]
+        EP[enterprise_search_policy.py]
+    end
+
+    subgraph CORELAYER["核心层"]
+        direction TB
+        CORE[core/]
+        TR[tracker.py]
+        DOM[domain.py]
+        SL[slots.py]
+    end
+
+    subgraph EXT["扩展层"]
+        direction LR
+        NLG[nlg/]
+        CH[channels/]
+        RET[retrieval/]
+        NLG --- CH --- RET
+    end
+
+    CLI --> AG
+    API --> AG
+    AG --> GR
+    AG --> AC
+    GR --> DU
+    GR --> POL
+    DU --> CMD
+    DU --> GEN
+    DU --> PROC
+    POL --> FP
+    POL --> EP
+    AG --> CORE
+    CORE --> TR
+    CORE --> DOM
+    CORE --> SL
+    AG --> CH
+    EP --> RET
+
+    classDef default fill:#eef2ff,stroke:#6b7280,stroke-width:2px,color:#111827;
+    linkStyle default stroke:#6b7280,stroke-width:2.5px,opacity:1;
+```
+
+
+
+## 二、对话状态管理（Tracker模块）
+
+### 2.1 Tracker设计架构
+
+```mermaid
+graph TB
+    subgraph "Tracker核心职责"
+        T[DialogueStateTracker]
+
+        T --> H[对话历史管理<br/>dialogue_turns]
+        T --> S[槽位状态管理<br/>slots]
+        T --> F[Flow状态管理<br/>dialogue_stack]
+        T --> M[消息管理<br/>latest_message]
+        T --> A[动作追踪<br/>latest_action_name]
+    end
+```
+
+
+
+### 2.2 数据结构
+
+`类图`
+
+```mermaid
+classDiagram
+    class DialogueStateTracker {
+        +sender_id: str
+        +slots: Dict~str, Slot~
+        +dialogue_turns: List~DialogueTurn~
+        +dialogue_stack: DialogueStack
+        +latest_message: UserMessage
+        +latest_action_name: str
+        +flow_history: List~Dict~
+        +active_flow: str
+        +update_with_message()
+        +add_bot_message()
+        +set_slot()
+        +get_slot()
+        +start_flow()
+        +end_flow()
+        +to_dict()
+        +from_dict()
+    }
+
+    class UserMessage {
+        +text: str
+        +sender_id: str
+        +timestamp: float
+        +input_channel: str
+        +metadata: Dict
+    }
+
+    class BotMessage {
+        +text: str
+        +data: Dict
+        +timestamp: float
+        +metadata: Dict
+    }
+
+    class DialogueTurn {
+        +user_message: UserMessage
+        +bot_messages: List~BotMessage~
+        +commands: List~Dict~
+        +action_name: str
+        +timestamp: float
+    }
+
+    DialogueStateTracker --> UserMessage
+    DialogueStateTracker --> DialogueTurn
+    DialogueTurn --> UserMessage
+    DialogueTurn --> BotMessage
+```
+
+
+### 2.3 实现逻辑
+
+`DialogueStateTracker` 当前通过 `dialogue_turns`（已完成轮次）和 `_current_turn`（进行中轮次）两段式结构管理多轮对话，核心流程如下：
+
+```mermaid
+flowchart TD
+    U["接收用户消息<br/>update_with_message(message)"]
+    C{"_current_turn 是否存在"}
+    S1["_save_current_turn()<br/>将上一轮写入 dialogue_turns"]
+    N["创建新轮次<br/>DialogueTurn(user_message=message)"]
+    R["更新状态<br/>latest_message / latest_action_name=ACTION_LISTEN / updated_at"]
+
+    B["追加 Bot 响应<br/>add_bot_message(message)"]
+    C2{"_current_turn 是否为空"}
+    N2["创建空轮次<br/>DialogueTurn()"]
+    A2["追加 bot_messages 并刷新 updated_at"]
+
+    H["获取历史<br/>get_conversation_history(max_turns)"]
+    H1["复制 dialogue_turns"]
+    H2["若有 _current_turn 则临时拼接"]
+    H3["按 max_turns 截取最近 N 轮"]
+    H4["turn.to_dict() 输出结构化历史"]
+
+    P["_save_current_turn()"]
+    P1["追加到 dialogue_turns"]
+    P2{"len(dialogue_turns) > max_turns"}
+    P3["pop(0) 丢弃最早轮次"]
+    P4["清空 _current_turn"]
+
+    U --> C
+    C -- 是 --> S1 --> N --> R
+    C -- 否 --> N
+
+    B --> C2
+    C2 -- 是 --> N2 --> A2
+    C2 -- 否 --> A2
+
+    H --> H1 --> H2 --> H3 --> H4
+
+    P --> P1 --> P2
+    P2 -- 是 --> P3 --> P4
+    P2 -- 否 --> P4
+```
+
+这套机制实现了“上一轮封存 + 当前轮累积 + 窗口化返回”的多轮对话管理策略。
+
+
+
+## 三、槽位系统
+
+### 3.1 槽位类型
+
+`槽位(Slot)` 是对话系统中用于存储收集信息的容器
+
+```mermaid
+classDiagram
+    class Slot {
+        <<abstract>>
+        +name: str
+        +value: Any
+        +initial_value: Any
+        +mapping_type: SlotMappingType
+        +description: str
+        +is_set()
+        +reset()
+        +to_dict()
+    }
+
+    class TextSlot {
+        +type_name = "text"
+    }
+
+    class BoolSlot {
+        +type_name = "bool"
+    }
+
+    class FloatSlot {
+        +type_name = "float"
+        +min_value: float
+        +max_value: float
+    }
+
+    class ListSlot {
+        +type_name = "list"
+        +append()
+    }
+
+    class CategoricalSlot {
+        +type_name = "categorical"
+        +values: List
+    }
+
+    class AnySlot {
+        +type_name = "any"
+    }
+
+    Slot <|-- TextSlot
+    Slot <|-- BoolSlot
+    Slot <|-- FloatSlot
+    Slot <|-- ListSlot
+    Slot <|-- CategoricalSlot
+    Slot <|-- AnySlot
+```
+
+| 类型                | 说明   | 验证规则       | 示例     |
+| ----------------- | ---- | ---------- | ------ |
+| `TextSlot`        | 文本槽位 | 必须是字符串     | 订单号、地址 |
+| `BoolSlot`        | 布尔槽位 | 必须是布尔值     | 是否确认   |
+| `FloatSlot`       | 数值槽位 | 必须是数字，可设范围 | 金额、数量  |
+| `ListSlot`        | 列表槽位 | 必须是列表      | 商品列表   |
+| `CategoricalSlot` | 分类槽位 | 必须在预定义值中   | 支付方式   |
+| `AnySlot`         | 任意槽位 | 接受任何值      | 通用存储   |
+
+`槽位的映射类型`
+ 
+- 用户消息（UserMessage）
+- Bot响应列表（List[BotMessage]）
+- 生成的命令（commands）
+- 执行的动作名称（action_name）
+
 ## Docker 生产部署
 
 ```bash
@@ -131,10 +398,9 @@ docker compose -f docker-compose.prod.yml logs -f
 ```
 
 说明：
+
 - 镜像内使用 `uv sync --frozen --no-dev`，仅安装生产依赖并严格锁定 `uv.lock`。
 - 容器默认使用非 root 用户运行，降低安全风险。
 - 当前默认启动命令为 `csa`；接入 FastAPI 后可改为 `uvicorn ...`。
 - 请将 `.env` 中的密钥改为云平台 Secret 注入，不要提交到仓库。
-
-
 

@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-05-24
+
+### 配置与加载
+
+- `config/config.yaml`：新增统一配置源，集中维护 `env_keys/defaults/env_bindings/actions/mysql` 等配置段。
+- `app/shared/config.py`：重构为纯 `dataclass` 配置模型（`Settings`、`MysqlConfig` 等），移除旧的动态对象兼容别名。
+- `app/shared/yaml_loader.py`：实现 YAML 读取、`env_bindings` 覆盖、`get_settings/reload_settings/settings` 缓存加载入口。
+- `app/shared/constants.py`、`app/shared/__init__.py`：统一导出 `Settings` 与新的配置加载入口，清理旧别名。
+- `app/shared/utils.py`：沉淀环境变量解析辅助函数（布尔值与运行环境解析）。
+
+### 存储模块
+
+- `app/core/stores/tracker_store.py`：补充 TrackerStore 抽象接口与创建/查询辅助流程，明确基类行为。
+- `app/core/stores/json_store.py`：实现 JSON 文件存储后端（保存、读取、删除、枚举、关闭）。
+- `app/core/stores/mysql_store.py`：实现 MySQL 存储后端初始化与 CRUD，支持 MySQL upsert 和异步上下文关闭连接。
+
+### 核心与共享模块
+
+- `app/core/domain.py`、`app/core/tracker.py`、`app/core/slots.py`：补充/优化注释与配置引用方式，统一从 `yaml_loader.settings` 读取运行配置。
+- `app/shared/logger.py`：切换到新配置加载入口，日志环境参数由 `settings` 提供。
+- `app/shared/exceptions.py`：补充统一异常定义，完善存储与配置相关异常表达。
+
+### 规则
+
+- `.cursor/rules/docstring-on-function-and-class.mdc`：新增全局规则，要求新增/修改函数和类时必须补充功能注释。
+
+---
+
 ## 2026-05-23
 
 ### 日志与配置

@@ -9,7 +9,7 @@ from typing import Optional,Any
 from dataclasses import dataclass,field
 
 from app.core.slots import Slot,create_slot
-from app.shared.constants import DEFAULT_SENDER_ID,ACTION_LISTEN
+from app.shared.yaml_loader import settings
 
 
 @dataclass
@@ -18,7 +18,7 @@ class UserMessage:
     分装用户发送的消息及其元数据
     """
     text: str # 用户发送的消息文本
-    sender_id:str = DEFAULT_SENDER_ID # 发送者ID 通常是用户ID
+    sender_id: str = field(default_factory=lambda: settings.business.default_sender_id)
     timestamp: float = field(default_factory=time.time)  # 消息发送时间戳
     input_chanel:Optional[str] = None # 输入通道 如："rest", "websocket", "console"
     metadata:dict[str,Any] = field(default_factory=dict) # 额外元数据
@@ -42,7 +42,7 @@ class UserMessage:
         """
         return cls(
             text=data.get("text",""),
-            sender_id=data.get("sender_id",DEFAULT_SENDER_ID),
+            sender_id=data.get("sender_id", settings.business.default_sender_id),
             timestamp=data.get("timestamp",time.time()),
             input_chanel=data.get("input_chanel"),
             metadata=data.get("metadata",{}),
@@ -104,13 +104,41 @@ class DialogueTurn:
         }
 
 class DialogueStateTracker:
-    """
-    对话状态追踪器 管理单个用户会话的完整状态
-    核心功能：
-    - 记录对话历史(用户消息和Bot响应)
-    - 管理槽位状态
-    - 跟踪活跃的Flow（通过dialogue_stack）
-    - 支持状态序列化和反序列化
+    """对话状态追踪器（Tracker）——单个用户会话的运行时「现场记录」。
+
+    实际作用
+    --------
+    每个 ``sender_id``（用户/会话）对应一个 Tracker 实例，贯穿多轮对话的生命周期。
+    每来一条用户消息、每执行一个 Action、每产生一条 Bot 回复，都会在这里留下痕迹。
+    Policy、Action、NLG 等模块**读写的都是 Tracker**，而不是直接改 Domain。
+
+    与 :class:`~app.core.domain.Domain` 的关系
+    -----------------------------------------
+    - Domain 回答：「这个 bot *能* 有哪些槽、动作、话术、Flow？」（静态配置）
+    - Tracker 回答：「*当前这一轮* 用户说了什么、槽里填了什么、栈顶是哪个 Flow？」（动态状态）
+
+    二者在 Action 执行时一并传入：用 Domain 查模板/白名单，用 Tracker 读写信道状态。
+
+    核心职责
+    --------
+  1. **对话历史**：``dialogue_turns`` / ``_current_turn`` 记录每轮的
+     :class:`UserMessage`、:class:`BotMessage`、执行的 ``action_name`` 与 commands。
+  2. **槽位运行时值**：``slots`` 存的是带 ``.value`` 的槽位实例；``get_slot`` /
+     ``set_slot`` / ``get_all_slots`` 供 Action 与模板变量替换使用。
+  3. **Flow 上下文**：``dialogue_stack``（待完善）表示当前嵌套/活跃的 Flow；
+     ``flow_history`` 记录已完成的 Flow；``active_flow`` 反映栈顶 Flow 名。
+  4. **最新快照**：``latest_message``、``latest_action_name``（如 ``action_listen``）
+     供策略判断「是否在等待用户输入」。
+  5. **持久化载体**：实例状态可序列化后写入 TrackerStore（JSON/MySQL），
+     下次请求加载同一 ``sender_id`` 的 Tracker 即可恢复上下文。
+
+    典型生命周期（单轮）
+    ------------------
+    ``update_with_message`` → Policy 选 action → Action 可能 ``set_slot`` /
+    ``add_bot_message`` → ``finalize_turn`` 将当前轮次并入 ``dialogue_turns``。
+
+    注意：Tracker 不负责定义槽位类型或 utter 文案；那些来自 Domain 或加载器，
+    初始化时可将 Domain 中的 Slot 定义拷贝/合并进 ``self.slots``。
     """
 
     def __init__(self,
@@ -143,7 +171,7 @@ class DialogueStateTracker:
 
         # 最新状态
         self.latest_message: Optional[UserMessage] = None
-        self.latest_action_name:str = ACTION_LISTEN
+        self.latest_action_name: str = settings.actions.listen
 
         # 元数据
         self.follow_action:Optional[str] = None
@@ -172,7 +200,7 @@ class DialogueStateTracker:
         self._current_turn = DialogueTurn(user_message=message)
         self.latest_message = message
         # 重置 latest_action_name,表示等待下一个动作
-        self.latest_action_name = ACTION_LISTEN
+        self.latest_action_name = settings.actions.listen
         self.updated_at = time.time()
 
     def add_bot_message(self, message:BotMessage) -> None:

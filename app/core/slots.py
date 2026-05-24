@@ -13,7 +13,7 @@ from abc import ABC
 from enum import Enum
 from typing import Text,Any,Optional,Union
 
-from shared.constants import SLOT_TYPE_ANY
+from app.shared.yaml_loader import settings
 class SlotMappingType(Enum):
     # Enum类 定义槽位映射类型
     """
@@ -70,14 +70,8 @@ class Slot(ABC):
     def value(self, value: Any) -> None:
         pass
 
-def create_slot(name:Text, slot_type:Text = SLOT_TYPE_ANY, **kwargs) :
-    """
-    创建槽位
-    Args:  
-        name: 槽位名称
-        slot_type: 槽位类型
-        **kwargs: 其他参数
-    Returns:
-        None
-    """
-    pass 
+def create_slot(name: Text, slot_type: Text | None = None, **kwargs) -> Slot:
+    """创建槽位。"""
+    if slot_type is None:
+        slot_type = settings.slots.type_any
+    raise NotImplementedError

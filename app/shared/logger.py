@@ -21,7 +21,7 @@ from uuid import uuid4
 
 from loguru import logger as _logger
 
-from app.shared.constants import APP_ENV, LOG_ENABLE_FILE, LOG_LEVEL, SERVICE_NAME
+from app.shared.yaml_loader import settings
 
 # 请求级上下文（协程/线程隔离，由 set_log_context / log_context 写入）
 session_id_var: ContextVar[str] = ContextVar("session_id", default="")
@@ -55,8 +55,9 @@ def mask_sensitive(text: str) -> str:
 def _patch_record(record: dict[str, Any]) -> None:
     """loguru patcher：为每条日志注入 env/session/trace 等上下文，并脱敏 message。"""
     extra = record["extra"]
-    extra.setdefault("env", APP_ENV)
-    extra.setdefault("service", SERVICE_NAME)
+    _s = settings
+    extra.setdefault("env", _s.app_env)
+    extra.setdefault("service", _s.service_name)
     extra.setdefault("session_id", session_id_var.get())
     extra.setdefault("trace_id", trace_id_var.get())
     extra.setdefault("port", port_var.get())
@@ -199,7 +200,13 @@ class _LoggerSingleton:
         self._configure_sinks()
         self._initialized = True
 
-        _logger.info("logger initialized env={} level={} file_enabled={}", APP_ENV, LOG_LEVEL, LOG_ENABLE_FILE)
+        _s = settings
+        _logger.info(
+            "logger initialized env={} level={} file_enabled={}",
+            _s.app_env,
+            _s.log_level,
+            _s.log_enable_file,
+        )
 
     def _should_rotate(self, message: Any, file_obj: Any) -> bool:
         """判断是否需要轮转：跨日（凌晨）或单文件超过 10MB。"""
@@ -217,38 +224,39 @@ class _LoggerSingleton:
 
     def _configure_sinks(self) -> None:
         """配置所有输出目标：stdout、运行日志、jsonl、debug 专用、error 专用。"""
+        _s = settings
         _logger.remove()
 
         _logger.add(
             sys.stdout,
-            level=LOG_LEVEL,
+            level=_s.log_level,
             format=_console_format(),
             colorize=True,
             backtrace=True,
-            diagnose=APP_ENV in {"dev", "test"},
+            diagnose=_s.app_env in {"dev", "test"},
             enqueue=True,
         )
 
-        if not LOG_ENABLE_FILE:
+        if not _s.log_enable_file:
             return
 
         file_format = _file_format()
 
         _logger.add(
             str(self.run_log_path),
-            level=LOG_LEVEL,
+            level=_s.log_level,
             format=file_format,
             encoding="utf-8",
             enqueue=True,
             backtrace=True,
-            diagnose=APP_ENV in {"dev", "test"},
+            diagnose=_s.app_env in {"dev", "test"},
             rotation=self._should_rotate,
             retention="60 days",
         )
 
         _logger.add(
             self._jsonl_sink,
-            level=LOG_LEVEL,
+            level=_s.log_level,
             format="{message}",
             enqueue=True,
         )

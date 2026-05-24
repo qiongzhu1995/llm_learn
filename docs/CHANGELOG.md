@@ -13,6 +13,9 @@
 - `app/shared/yaml_loader.py`：实现 YAML 读取、`env_bindings` 覆盖、`get_settings/reload_settings/settings` 缓存加载入口。
 - `app/shared/constants.py`、`app/shared/__init__.py`：统一导出 `Settings` 与新的配置加载入口，清理旧别名。
 - `app/shared/utils.py`：沉淀环境变量解析辅助函数（布尔值与运行环境解析）。
+- `app/shared/config.py`：进一步合并加载逻辑，直接使用 OmegaConf Structured Config + `${oc.env:...}` 环境变量插值。
+- `app/shared/yaml_loader.py`、`config/config.yaml`：移除独立 loader 与外部 YAML 文件，配置默认值统一内聚到 `config.py`。
+- `.env.example`：变量命名与新插值方案对齐（`DB_HOST/DB_PORT/DB_USER/...`）。
 
 ### 存储模块
 
@@ -25,6 +28,13 @@
 - `app/core/domain.py`、`app/core/tracker.py`、`app/core/slots.py`：补充/优化注释与配置引用方式，统一从 `yaml_loader.settings` 读取运行配置。
 - `app/shared/logger.py`：切换到新配置加载入口，日志环境参数由 `settings` 提供。
 - `app/shared/exceptions.py`：补充统一异常定义，完善存储与配置相关异常表达。
+- `app/core/domain.py`、`app/core/tracker.py`、`app/core/slots.py`、`app/shared/logger.py`：配置读取入口改为 `app.shared.config`，并统一字典下标访问风格。
+
+### 对话栈与文档
+
+- `app/dialogue_understanding/stack/stack_frame.py`：抽取父类通用 `from_dict`，移除重复子类实现；`from_dict` 改为 Python 3.12 泛型签名。
+- `app/dialogue_understanding/stack/dialogue_stack.py`：补充核心实现与字符串表示，完善栈操作可读性。
+- `README.md`：重写 4.3 栈帧类型图，合并说明与属性展示并适配 Mermaid 渲染兼容性。
 
 ### 规则
 

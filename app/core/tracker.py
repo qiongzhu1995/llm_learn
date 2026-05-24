@@ -9,7 +9,7 @@ from typing import Optional,Any
 from dataclasses import dataclass,field
 
 from app.core.slots import Slot,create_slot
-from app.shared.yaml_loader import settings
+from app.shared.config import settings
 
 
 @dataclass
@@ -18,7 +18,7 @@ class UserMessage:
     分装用户发送的消息及其元数据
     """
     text: str # 用户发送的消息文本
-    sender_id: str = field(default_factory=lambda: settings.business.default_sender_id)
+    sender_id: str = field(default_factory=lambda: settings["business"]["default_sender_id"])
     timestamp: float = field(default_factory=time.time)  # 消息发送时间戳
     input_chanel:Optional[str] = None # 输入通道 如："rest", "websocket", "console"
     metadata:dict[str,Any] = field(default_factory=dict) # 额外元数据
@@ -42,7 +42,7 @@ class UserMessage:
         """
         return cls(
             text=data.get("text",""),
-            sender_id=data.get("sender_id", settings.business.default_sender_id),
+            sender_id=data.get("sender_id", settings["business"]["default_sender_id"]),
             timestamp=data.get("timestamp",time.time()),
             input_chanel=data.get("input_chanel"),
             metadata=data.get("metadata",{}),
@@ -171,7 +171,7 @@ class DialogueStateTracker:
 
         # 最新状态
         self.latest_message: Optional[UserMessage] = None
-        self.latest_action_name: str = settings.actions.listen
+        self.latest_action_name: str = settings["actions"]["listen"]
 
         # 元数据
         self.follow_action:Optional[str] = None
@@ -200,7 +200,7 @@ class DialogueStateTracker:
         self._current_turn = DialogueTurn(user_message=message)
         self.latest_message = message
         # 重置 latest_action_name,表示等待下一个动作
-        self.latest_action_name = settings.actions.listen
+        self.latest_action_name = settings["actions"]["listen"]
         self.updated_at = time.time()
 
     def add_bot_message(self, message:BotMessage) -> None:

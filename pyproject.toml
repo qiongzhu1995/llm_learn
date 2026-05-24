@@ -46,6 +46,7 @@ dependencies = [
     "faker>=40.18.0",                   # 测试数据生成
     "pymysql>=1.2.0",
     "loguru>=0.7.3",
+    "omegaconf>=2.3.0",
 ]
 
 # 依赖分层说明：

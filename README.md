@@ -264,6 +264,7 @@ classDiagram
 ```
 
 
+
 ### 2.3 实现逻辑
 
 `DialogueStateTracker` 当前通过 `dialogue_turns`（已完成轮次）和 `_current_turn`（进行中轮次）两段式结构管理多轮对话，核心流程如下：
@@ -308,9 +309,9 @@ flowchart TD
     P2 -- 否 --> P4
 ```
 
+
+
 这套机制实现了“上一轮封存 + 当前轮累积 + 窗口化返回”的多轮对话管理策略。
-
-
 
 ## 三、槽位系统
 
@@ -368,6 +369,9 @@ classDiagram
     Slot <|-- AnySlot
 ```
 
+
+
+
 | 类型                | 说明   | 验证规则       | 示例     |
 | ----------------- | ---- | ---------- | ------ |
 | `TextSlot`        | 文本槽位 | 必须是字符串     | 订单号、地址 |
@@ -377,12 +381,87 @@ classDiagram
 | `CategoricalSlot` | 分类槽位 | 必须在预定义值中   | 支付方式   |
 | `AnySlot`         | 任意槽位 | 接受任何值      | 通用存储   |
 
+
 `槽位的映射类型`
- 
+
 - 用户消息（UserMessage）
 - Bot响应列表（List[BotMessage]）
 - 生成的命令（commands）
 - 执行的动作名称（action_name）
+
+## 四、对话栈管理系统
+
+### 4.1 对话栈架构
+
+   **对话栈** 是管理对话上下文的栈结构，采用后进先出（LIFO）的数据结构。
+
+```mermaid
+sequenceDiagram
+    participant U as 用户
+    participant S as DialogueStack
+    participant F1 as 订单查询Flow
+    participant F2 as 物流查询Flow
+
+    U->>S: 启动订单查询
+    S->>F1: push_flow("订单查询")
+    Note over S: 栈: [订单查询]
+
+    U->>S: 我想看物流
+    S->>F2: push_flow("物流查询")
+    Note over S: 栈: [订单查询, 物流查询]
+    Note over S: 栈顶 = 物流查询
+
+    U->>S: 物流查询完成
+    S->>F2: pop()
+    Note over S: 栈: [订单查询]
+    Note over S: 自动回到订单查询
+
+    U->>S: 订单查询完成
+    S->>F1: pop()
+    Note over S: 栈: [] (空)
+```
+
+
+
+### 4.2 核心功能说明
+
+| 方法                            | 说明           |
+| ----------------------------- | ------------ |
+| `push(frame)`                 | 将帧压入栈顶       |
+| `pop()`                       | 弹出并返回栈顶帧     |
+| `top()`                       | 获取栈顶帧（不弹出）   |
+| `is_empty()`                  | 检查栈是否为空      |
+| `push_flow(flow_id, step_id)` | 压入新的Flow帧    |
+| `top_flow_frame()`            | 获取栈顶的Flow帧   |
+| `active_flow_frame()`         | 获取当前活动的Flow帧 |
+| `pop_to_flow(flow_id)`        | 弹出直到指定Flow   |
+| `interrupt_top_flow()`        | 中断栈顶Flow     |
+
+### 4.3 栈帧类型
+
+```mermaid
+flowchart TB
+    A["StackFrame<br/><<abstract>><br/>+frame_id: str<br/>+state: FrameState"]
+
+    B["FlowStackFrame（Flow帧）<br/>说明: 执行定义的Flow流程<br/>+flow_id: str<br/>+step_id: str<br/>+flow_frame_type: FlowFrameType<br/>+slot_to_collect: str<br/>+completing: bool<br/>+advance_to_step()"]
+    C["SearchStackFrame（搜索帧）<br/>说明: 执行知识库搜索<br/>栈帧类型: search"]
+    D["ChitChatStackFrame（闲聊帧）<br/>说明: 处理闲聊对话<br/>栈帧类型: chitchat"]
+    E["CannotHandleStackFrame（无法处理帧）<br/>说明: 系统无法处理的请求<br/>+reason: str"]
+    F["CompletedStackFrame（完成帧）<br/>说明: Flow完成后的空闲状态<br/>+previous_flow_name: str"]
+    G["HumanHandoffStackFrame（人工转接帧）<br/>说明: 需要转接人工客服<br/>+reason: str"]
+
+    A --> B
+    A --> C
+    A --> D
+    A --> E
+    A --> F
+    A --> G
+```
+
+
+
+
+
 
 ## Docker 生产部署
 

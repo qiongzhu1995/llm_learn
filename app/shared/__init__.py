@@ -1,7 +1,7 @@
 # 文件说明：包初始化。
 
 from app.shared.config import Settings
-from app.shared.yaml_loader import get_settings, reload_settings
+from app.shared.config import get_settings, reload_settings
 from app.shared.logger import (
     clear_log_context,
     get_logger,

@@ -14,13 +14,13 @@ from typing import Optional, Any, Iterator
 
 class StepType(str, Enum):
     """步骤类型"""
-    ACTION = "action"
-    COLLECT = "collect"
-    LINK = "link"
-    SET_SLOT = "set_slot"
-    CONDITION = "condition"
-    END = "end"
-    CALL = "call"    
+    ACTION = "action"  #
+    COLLECT = "collect" # 收集槽位
+    LINK = "link" # 跳转Flow
+    SET_SLOT = "set_slot" # 设置槽位
+    CONDITION = "condition" # 条件判断
+    END = "end" # 结束
+    CALL = "call" # 调用Flow
 
 @dataclass
 class FlowStep:
@@ -247,6 +247,10 @@ class Flow:
     def get_step(self, step_id:str) -> Optional[FlowStep]:
         """获取指定ID的步骤"""
         return self._step_index.get(step_id)
+    
+    def get_first_step(self) -> Optional[FlowStep]:
+        """获取第一个步骤"""
+        return self.get_step(self.steps[0]) if self.steps else None
 
     def get_next_step(self,step_id:str) -> Optional[FlowStep]:
         """获取指定步骤的下一个步骤"""

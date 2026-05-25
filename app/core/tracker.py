@@ -10,7 +10,7 @@ from dataclasses import dataclass,field
 
 from app.core.slots import Slot,create_slot
 from app.shared.config import settings
-
+from app.dialogue_understanding.stack.dialogue_stack import DialogueStack
 
 @dataclass
 class UserMessage:
@@ -298,15 +298,56 @@ class DialogueStateTracker:
             slot.reset()
         self.updated_at = time.time()
     
+    def start_flow(self, flow_name:str ,step_id:str = "START") -> None:
+        """
+        开始一个flow   将FlowStackFrame压入dialogue_stack。
+
+        Args:
+            flow_name: flow名称
+            step_id: 开始步骤ID
+        """
+        self.dialogue_stack.push_flow_frame(flow_name,step_id)
+
+        # 记录到历史
+        self.flow_history.append({
+            "flow_name": flow_name,
+            "started_at": time.time(),
+            "ended_at": None,
+            "completed": False,
+        })
+        self.updated_at = time.time()
+    
+    def end_flow(self) -> Optional[str]:
+        """结束当前Flow
+        
+        从dialogue_stack弹出栈顶的FlowStackFrame。
+        
+        返回：
+            结束的Flow名称，栈为空返回None
+        """
+        # 获取栈顶的FlowStackFrame
+        flow_frame = self.dialogue_stack.top_flow_frame()
+        if flow_frame is None:
+            return None
+        
+        flow_name = flow_frame.flow_id
+        # 将它上面的所有帧弹出到该Flow
+        self.dialogue_stack.pop_to_flow(flow_name)
+        # 弹出本身
+        self.dialogue_stack.pop()
+
+        # 记录到历史
+        for hist in reversed(self.flow_history):
+            if hist["flow_name"] == flow_name and hist["ended_at"] is None:
+                hist["ended_at"] = time.time()
+                hist["completed"] = True
+                break
+        self.updated_at = time.time()
+        return flow_name
+    
+    def cancel_flow(self) -> None:
+        """ 取消所有的活跃Flow """
+        self.dialogue_stack.clear
+        self.updated_at = time.time()
+        
    
-        
-        
-
-
-
-
-
-
-
-
-

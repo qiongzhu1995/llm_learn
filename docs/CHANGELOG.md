@@ -16,6 +16,9 @@
 
 - `app/dialogue_understanding/flow/flow.py`：补充 `FlowStep`、`Flow`、`FlowsList` 数据结构与序列化/反序列化能力，完善 Flow 运行时模型定义。
 - `app/dialogue_understanding/flow/flow_loader.py`：新增 Flow 加载器，支持单文件、目录与字符串加载，并统一转换为 `FlowsList`。
+- `app/dialogue_understanding/flow/flow_executor.py`：新增 Flow 执行器与执行结果模型，补充步骤分派、条件计算、子流程调用与槽位收集流程控制。
+- `app/core/tracker.py`：补充 `start_flow/end_flow/cancel_flow`，将 Flow 生命周期与 `dialogue_stack` 状态联动，记录 Flow 历史。
+- `app/dialogue_understanding/flow/flow.py`：新增 `get_first_step()` 作为执行器获取入口步骤的统一方法。
 
 ### 规则
 

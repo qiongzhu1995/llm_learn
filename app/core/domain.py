@@ -88,10 +88,10 @@ class Domain:
 
     def _add_default_responses(self) -> None:
         """添加默认响应模板"""
-        actions = settings["actions"]
+        actions = settings.actions
         default_actions = {
-            actions["listen"],
-            actions["restart"],
-            actions["session_start"],
-            actions["default_fallback"],
+            actions.listen,
+            actions.restart,
+            actions.session_start,
+            actions.default_fallback,
         }

@@ -4,6 +4,25 @@
 
 ---
 
+## 2026-05-25
+
+### 配置与共享模块
+
+- `app/shared/config.py`：`get_settings/reload_settings/settings` 返回类型统一为 `Settings` 实例，配置访问改为属性风格，提升 IDE 自动补全与类型提示效果。
+- `app/core/domain.py`、`app/core/slots.py`、`app/core/tracker.py`、`app/shared/logger.py`：同步从字典下标访问切换为 `settings.xxx` 属性访问，适配强类型配置对象。
+- `app/shared/yaml_loader.py`：新增 YAML 工具函数集合（文件/字符串读取、多文档读取、合并与深度合并），并统一使用 `safe_load` 解析。
+
+### 对话流程
+
+- `app/dialogue_understanding/flow/flow.py`：补充 `FlowStep`、`Flow`、`FlowsList` 数据结构与序列化/反序列化能力，完善 Flow 运行时模型定义。
+- `app/dialogue_understanding/flow/flow_loader.py`：新增 Flow 加载器，支持单文件、目录与字符串加载，并统一转换为 `FlowsList`。
+
+### 规则
+
+- `.cursor/rules/changelog-on-commit.mdc`：规则描述更新为“按 commit 次数归档”的表述与示例，便于后续按新约定维护。
+
+---
+
 ## 2026-05-24
 
 ### 配置与加载

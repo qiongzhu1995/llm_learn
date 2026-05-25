@@ -104,25 +104,23 @@ def load_config_file() -> dict[str, Any]:
 def to_omegaconf_type(config_data: dict[str, Any]) -> DictConfig:
     """2) 将配置类型转换为 OmegaConf Structured Config 类型。"""
     _ = config_data
-    return OmegaConf.create(config_data)
+    return OmegaConf.structured(Settings)
 
 
 def merge_config_with_omegaconf(
     config_data: dict[str, Any], config_type: DictConfig | None = None
-) -> dict[str, Any]:
-    """3) 合并配置内容与 OmegaConf 类型，返回合并后的 dict。"""
+) -> Settings:
+    """3) 合并配置内容与 OmegaConf 类型，返回合并后的 Settings。"""
     schema = config_type or to_omegaconf_type(config_data)
-    merged: dict[str, Any] = OmegaConf.to_container(
-        OmegaConf.merge(schema, OmegaConf.structured(Settings)),
-        resolve=True,
-    )  # type: ignore[assignment]
-    if not isinstance(merged, dict):
-        raise ValueError("合并后的配置必须为字典")
-    return merged
+    merged_cfg = OmegaConf.merge(schema, OmegaConf.create(config_data))
+    merged_obj = OmegaConf.to_object(merged_cfg)
+    if not isinstance(merged_obj, Settings):
+        raise ValueError("合并后的配置必须为 Settings 类型")
+    return merged_obj
 
 
 @lru_cache
-def get_settings() -> dict[str, Any]:
+def get_settings() -> Settings:
     """读取、转换、合并配置并缓存结果。"""
     load_dotenv(_PROJECT_ROOT / ".env")
     raw = load_config_file()
@@ -130,7 +128,7 @@ def get_settings() -> dict[str, Any]:
     return merge_config_with_omegaconf(raw, conf_type)
 
 
-def reload_settings() -> dict[str, Any]:
+def reload_settings() -> Settings:
     """清空缓存并重新加载配置。"""
     global settings
     get_settings.cache_clear()
@@ -139,5 +137,5 @@ def reload_settings() -> dict[str, Any]:
 
 
 # 模块级配置对象，业务代码直接引用，避免反复调用 get_settings()
-settings: dict[str, Any] = get_settings()
+settings: Settings = get_settings()
 

@@ -73,5 +73,5 @@ class Slot(ABC):
 def create_slot(name: Text, slot_type: Text | None = None, **kwargs) -> Slot:
     """创建槽位。"""
     if slot_type is None:
-        slot_type = settings["slots"]["type_any"]
+        slot_type = settings.slots.type_any
     raise NotImplementedError

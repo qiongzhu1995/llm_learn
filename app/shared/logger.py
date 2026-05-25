@@ -56,8 +56,8 @@ def _patch_record(record: dict[str, Any]) -> None:
     """loguru patcher：为每条日志注入 env/session/trace 等上下文，并脱敏 message。"""
     extra = record["extra"]
     _s = settings
-    extra.setdefault("env", _s["app_env"])
-    extra.setdefault("service", _s["service_name"])
+    extra.setdefault("env", _s.app_env)
+    extra.setdefault("service", _s.service_name)
     extra.setdefault("session_id", session_id_var.get())
     extra.setdefault("trace_id", trace_id_var.get())
     extra.setdefault("port", port_var.get())
@@ -203,9 +203,9 @@ class _LoggerSingleton:
         _s = settings
         _logger.info(
             "logger initialized env={} level={} file_enabled={}",
-            _s["app_env"],
-            _s["log_level"],
-            _s["log_enable_file"],
+            _s.app_env,
+            _s.log_level,
+            _s.log_enable_file,
         )
 
     def _should_rotate(self, message: Any, file_obj: Any) -> bool:
@@ -229,34 +229,34 @@ class _LoggerSingleton:
 
         _logger.add(
             sys.stdout,
-            level=_s["log_level"],
+            level=_s.log_level,
             format=_console_format(),
             colorize=True,
             backtrace=True,
-            diagnose=_s["app_env"] in {"dev", "test"},
+            diagnose=_s.app_env in {"dev", "test"},
             enqueue=True,
         )
 
-        if not _s["log_enable_file"]:
+        if not _s.log_enable_file:
             return
 
         file_format = _file_format()
 
         _logger.add(
             str(self.run_log_path),
-            level=_s["log_level"],
+            level=_s.log_level,
             format=file_format,
             encoding="utf-8",
             enqueue=True,
             backtrace=True,
-            diagnose=_s["app_env"] in {"dev", "test"},
+            diagnose=_s.app_env in {"dev", "test"},
             rotation=self._should_rotate,
             retention="60 days",
         )
 
         _logger.add(
             self._jsonl_sink,
-            level=_s["log_level"],
+            level=_s.log_level,
             format="{message}",
             enqueue=True,
         )

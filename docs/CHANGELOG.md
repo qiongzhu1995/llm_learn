@@ -4,6 +4,34 @@
 
 ---
 
+## 2026-05-26
+
+### 策略与流程编排
+
+- `app/policies/base_policy.py`：补全策略基类实现，增加统一的异步/同步预测入口与基础能力（`should_predict`、`does_support_stack_frame`、`train/persist/load` 占位）。
+- `app/policies/flow_policy.py`：完善 Flow 执行主流程与槽位作用域重置逻辑，增强 flow 完成态处理和步骤推进控制。
+- `app/policies/enterprise_search_policy.py`：补充企业检索策略主干能力，扩展降级链路、Pattern 记录与异常分支处理。
+- `app/dialogue_understanding/flow/flow_executor.py`：新增 `advance_step` 与 `set_flows`，支持外部策略推进步骤和动态切换 flow 集合。
+- `app/core/tracker.py`：新增 `record_pattern()`，将内置 Pattern 执行记录纳入 `flow_history` 统一观测。
+
+### LLM 与检索
+
+- `app/shared/llm/base_client.py`、`app/shared/llm/langchain_client.py`、`app/shared/llm/__init__.py`：增强 LLM 客户端抽象与实现，补充 `anthropic` 支持并统一导出接口。
+- `app/retrieval/base_retriever.py`：补全检索器基类结构，统一检索层对接契约。
+- `app/shared/exceptions.py`：扩展 LLM/检索相关异常类型，便于上层策略按错误类型处理。
+
+### 配置与提示词
+
+- `app/shared/config.py`：新增 `PromptConfig` 与降级原因配置，集中管理提示词目录、提示词文件名及默认文案。
+- `app/shared/load_prompt.py`：新增简化提示词加载函数 `load_prompt()`，按配置读取 `.prompt` 文件并返回字符串。
+- `docs/prompts/rag_prompt.prompt`、`docs/prompts/chitchat_prompt.prompt`：新增检索问答与闲聊提示词模板文件。
+
+### 规则
+
+- `.cursor/rules/changelog-on-commit.mdc`：更新提交流程规则，默认执行 `commit + push`，并保留“用户可显式要求仅 commit”的覆盖行为。
+
+---
+
 ## 2026-05-25
 
 ### 配置与共享模块

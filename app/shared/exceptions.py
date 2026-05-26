@@ -81,3 +81,51 @@ class DatabaseOperationError(CustomerServiceAgentException):
     当数据库操作失败时抛出。
     """
     pass
+
+# ======================LLM请求异常======================
+class LLMException(AtguiguException):
+    """LLM异常基类
+    
+    所有LLM相关异常的基类。
+    """
+    pass
+
+
+class LLMConnectionError(LLMException):
+    """LLM连接错误
+    
+    当无法连接到LLM API服务时抛出。
+    """
+    pass
+
+
+class LLMTimeoutError(LLMException):
+    """LLM超时错误
+    
+    当LLM API请求超时时抛出。
+    """
+    pass
+
+
+class   LLMResponseError(LLMException):
+    """LLM响应错误
+    
+    当LLM返回无效或无法解析的响应时抛出。
+    """
+    pass
+
+
+class LLMAuthenticationError(LLMException):
+    """LLM认证错误
+    
+    当API密钥无效或认证失败时抛出。
+    """
+    pass
+
+
+class LLMRateLimitError(LLMException):
+    """LLM速率限制错误
+    
+    当超过API调用速率限制时抛出。
+    """
+    pass

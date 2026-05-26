@@ -47,12 +47,12 @@ class BusinessConfig:
 class ActionsConfig:
     """动作名称配置。"""
 
-    listen: str = "action_listen"
-    restart: str = "action_restart"
-    session_start: str = "action_session_start"
-    default_fallback: str = "action_default_fallback"
-    deactivate_loop: str = "action_deactivate_loop"
-    back: str = "action_back"
+    listen: str = "action_listen" # 监听动作
+    restart: str = "action_restart" # 重启动作
+    session_start: str = "action_session_start" # 会话开始动作
+    default_fallback: str = "action_default_fallback" # 默认降级动作
+    deactivate_loop: str = "action_deactivate_loop" # 关闭循环动作
+    back: str = "action_back" # 回退动作
 
 
 @dataclass
@@ -75,6 +75,35 @@ class MysqlConfig:
 
 
 @dataclass
+class PromptConfig:
+    """提示词配置。"""
+
+    path: str = "${oc.env:PROMPTS_DIR,docs/prompts}"
+    rag_prompt_file: str = "rag_prompt.prompt"
+    chitchat_prompt_file: str = "chitchat_prompt.prompt"
+    default_init_response: str = "你好，我是客服小助手，有什么可以帮您的？" # 默认初始化响应
+    chitchat_init_response: str = "您好，很开心和您聊天，请问有什么可以帮您的？" # 闲聊初始化响应
+    handoff_text: str = "好的，正在为您转接人工客服，请稍候..." # 人工转接响应
+    default_fallback_response: str = "抱歉，我没有理解您的意思。请换一种方式表达。" # 默认降级响应
+    default_complete_response: str = "还有什么我可以帮您的吗?" # 默认完成响应
+
+@dataclass
+class DegradationReasonConfig:
+    """降级原因常量类。
+    
+    封装企业搜索策略中的降级原因常量。
+    降级链: Flow -> RAG -> Chitchat -> CannotHandle
+    """
+    DEFAULT: str = "default" # 默认降级
+    CHITCHAT: str = "chitchat" # 闲聊降级
+    NOT_SUPPORTED: str = "not_supported" # 不支持降级
+    INVALID_INTENT: str = "invalid_intent" # 无效意图降级
+    NO_RELEVANT_ANSWER: str = "no_relevant_answer" # 无相关答案降级
+    INTERNAL_ERROR: str = "internal_error" # 内部错误降级
+    CANNOT_HANDLE: str = "cannot_handle" # 无法处理降级
+
+
+@dataclass
 class Settings:
     """顶层配置对象（供业务代码直接引用）。"""
 
@@ -84,6 +113,8 @@ class Settings:
     actions: ActionsConfig = field(default_factory=ActionsConfig)
     slots: SlotsConfig = field(default_factory=SlotsConfig)
     mysql: MysqlConfig = field(default_factory=MysqlConfig)
+    prompts: PromptConfig = field(default_factory=PromptConfig)
+    degradation: DegradationReasonConfig = field(default_factory=DegradationReasonConfig)
     app_env: str = "${oc.env:APP_ENV,dev}"
     log_level: str = "${oc.env:LOG_LEVEL,INFO}"
     log_enable_file: bool = "${oc.env:LOG_ENABLE_FILE,true}"

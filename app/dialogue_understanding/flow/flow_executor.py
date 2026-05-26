@@ -395,6 +395,21 @@ class FlowExecutor:
         # 返回槽位值的布尔值
         return bool(slot_value)
 
+    def advance_step(self, tracker:"DialogueStateTracker",next_step_id:str) -> None:
+        """ 前进到下一个步骤"""
+        flow_frame = tracker.dialogue_stack.top_flow_frame()
+        if flow_frame:
+            flow_frame.step_id = next_step_id
+            logger.info(f"前进到下一个步骤: {next_step_id} ,当前flow: {flow_frame.flow_id}")
+        else:
+            logger.warning("没有找到当前flow，无法前进到下一个步骤")
+        return self.excute_next_step(tracker)
+    
+    def set_flows(self, flows:FlowsList) -> None:
+        """设置flows"""
+        self.flows = flows
+
+
 __all__ = ["FlowExecutor", "ExcutionResult"]       
 
 

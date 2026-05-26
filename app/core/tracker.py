@@ -349,5 +349,25 @@ class DialogueStateTracker:
         """ 取消所有的活跃Flow """
         self.dialogue_stack.clear
         self.updated_at = time.time()
+    
+    def record_pattern(self, pattern:str,completed:bool = True) -> None:
+        """记录内置 Pattern 的执行历史
         
+        将内置 Pattern（如 chitchat、search、cannot_handle 等）的执行记录
+        添加到 flow_history 中，以便在 Inspect 页面统一展示。
+        
+        参数：
+            pattern_type: Pattern 类型，如 "chitchat"、"search"、"cannot_handle"、
+                         "completed"、"human_handoff"
+            completed: 是否执行完成，默认为 True
+        """
+        current_time = time.time()
+        self.flow_history.append({
+            "flow_name":f"pattern_{pattern}",
+            "started_at": current_time,
+            "ended_at": current_time if completed else None,
+            "completed": completed,
+        })
+        self.updated_at = current_time
+
    

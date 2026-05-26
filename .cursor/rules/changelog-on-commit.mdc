@@ -1,11 +1,17 @@
 ---
-description: 每次 git 提交前必须更新 docs/CHANGELOG.md（按 commit 次数归档）
+description: 提交时更新 CHANGELOG，并默认执行 commit+push
 alwaysApply: true
 ---
 
-# 提交时同步更新 CHANGELOG
+# 提交时同步更新 CHANGELOG（默认 commit + push）
 
-当用户要求**提交代码**（`git commit`）或你准备创建提交时，**必须**先更新 [`docs/CHANGELOG.md`](docs/CHANGELOG.md)，并将该文件与代码变更**纳入同一次提交**。
+当用户要求**提交代码**（如“提交下代码”）或你准备创建提交时，遵循以下默认流程：
+
+1. 先更新 [`docs/CHANGELOG.md`](docs/CHANGELOG.md)；
+2. 完成 `git commit`；
+3. 在用户未明确禁止的前提下，默认继续执行 `git push`。
+
+若用户明确说明“只 commit 不 push”，则按用户指令覆盖默认行为。
 
 ## 必须做的事
 
@@ -14,6 +20,7 @@ alwaysApply: true
 3. **按主题分组** — 使用 `### 分类名`（如「日志与配置」「核心模块」「文档」「部署」），每条用 `-` 列表，写清**做了什么**与**影响范围**（关键路径/模块名即可）。
 4. **与 diff 一致** — 条目须反映本次 `git diff` 的真实变更；不要写未改动的内容。
 5. **同一次提交** — `git add` 时包含 `docs/CHANGELOG.md` 与相关代码文件。
+6. **默认推送远端** — commit 成功后默认执行 push，并在回复中告知分支与提交哈希。
 
 ## 不必记录的内容
 

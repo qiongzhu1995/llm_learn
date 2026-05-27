@@ -53,13 +53,19 @@ class ActionsConfig:
     default_fallback: str = "action_default_fallback" # 默认降级动作
     deactivate_loop: str = "action_deactivate_loop" # 关闭循环动作
     back: str = "action_back" # 回退动作
+    min_confidence: float = 0.0 # 最小置信度
 
 
 @dataclass
 class SlotsConfig:
     """槽位配置。"""
 
-    type_any: str = "any"
+    slot_type_text: str = "text"
+    slot_type_bool: str = "bool"
+    slot_type_float: str = "float"
+    slot_type_list: str = "list"
+    slot_type_categorical: str = "categorical"
+    slot_type_any: str = "any"
 
 
 @dataclass

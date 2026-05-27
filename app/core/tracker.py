@@ -290,7 +290,7 @@ class DialogueStateTracker:
         
         self.updated_at = time.time()
 
-    def rest_slot(self) -> None:
+    def reset_slot(self, slot_name:str) -> None:
         """
         重置所有槽位为初始值
         """

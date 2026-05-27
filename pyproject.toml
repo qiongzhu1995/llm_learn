@@ -29,6 +29,7 @@ dependencies = [
     # LLM 与编排
     "dashscope>=1.20.0",               # 阿里云 DashScope SDK
     "langchain>=0.3.0",                # LangChain 入口包
+    "langchain-anthropic>=0.3.22",     # Anthropic 集成
     "langchain-community>=0.3.0",      # 社区扩展
     "langchain-core>=0.3.0",           # 核心组件
     "langchain-openai>=0.2.0",         # OpenAI 集成
@@ -40,6 +41,9 @@ dependencies = [
     "pyyaml>=6.0.0,<7.0.0",            # YAML 读写
     "ruamel-yaml>=0.17.0,<1.0.0",      # YAML 高级保真处理
     # 检索与存储
+    "jieba>=0.42.1",                    # 中文分词
+    "neo4j>=6.2.0",                     # Neo4j Python 驱动
+    "neo4j-graphrag>=1.16.1",           # Neo4j GraphRAG
     "numpy>=1.24.0,<3.0.0",            # 数值计算
     "sentence-transformers>=2.2.0",    # 本地向量嵌入
     "sqlalchemy>=2.0.0,<3.0.0",        # ORM 与数据库访问

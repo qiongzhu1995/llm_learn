@@ -4,6 +4,27 @@
 
 ---
 
+## 2026-05-27
+
+### 对话命令与策略
+
+- `app/dialogue_understanding/commands/base.py`、`app/dialogue_understanding/commands/answer_commands.py`、`app/dialogue_understanding/commands/flow_commands.py`、`app/dialogue_understanding/commands/session_commands.py`、`app/dialogue_understanding/commands/slot_commands.py`：补全命令体系实现与注册/执行逻辑，统一命令分发与处理流程。
+- `app/dialogue_understanding/commands/error_commands.py`：新增错误类命令实现，补充异常场景下的可执行命令行为。
+- `app/policies/policy_ensemble.py`：完善策略编排入口与路由逻辑，统一策略集成执行方式。
+- `app/policies/base_policy.py`：补充同步预测循环注释与基础行为细节，提升策略基类可读性。
+
+### 槽位与状态
+
+- `app/core/slots.py`：重构槽位类型解析逻辑，简化 `create_slot/from_dict` 路径并统一槽位类型到类实例映射实现。
+- `app/core/tracker.py`：小幅修正状态追踪逻辑，保持与命令处理链路一致。
+
+### 配置与依赖
+
+- `app/shared/config.py`、`app/shared/exceptions.py`：扩展配置与异常定义，支持新增命令/策略链路所需常量与错误类型。
+- `pyproject.toml`、`uv.lock`：补充并锁定 `jieba`、`neo4j`、`neo4j-graphrag`、`langchain-anthropic` 等依赖，确保本地环境与项目声明一致。
+
+---
+
 ## 2026-05-26
 
 ### 策略与流程编排

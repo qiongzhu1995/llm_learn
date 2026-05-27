@@ -9,6 +9,8 @@ from dataclasses import dataclass,field
 from typing import Optional,Any,TYPE_CHECKING
 from abc import ABC,abstractmethod
 
+from app.shared.config import settings
+
 if TYPE_CHECKING:
     from app.core.domain import Domain
     from app.dialogue_understanding.flow.flow import FlowsList
@@ -41,6 +43,17 @@ class PolicyPrediction:
     events:list[dict[str,Any]] = field(default_factory=list)
     metadata:dict[str,Any] = field(default_factory=dict)
     policy_name:str = ""
+
+    @property
+    def is_abstain(self) -> bool:
+        """是否放弃预测"""
+        return self.action is None or self.confidence < settings.actions.min_confidence
+    
+    @classmethod
+    def abstain(cls,policy_name:str="") -> "PolicyPrediction":
+        """放弃预测"""
+        # 创建一个放弃预测的PolicyPrediction对象
+        return cls(action=None,confidence=settings.actions.min_confidence,policy_name=policy_name)
 
 class Policy(ABC):
     """策略基类

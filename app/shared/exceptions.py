@@ -40,6 +40,16 @@ class MissingConfigException(ConfigurationException):
     """
     pass
 
+#
+# ======================槽位相关异常======================
+class InvalidSlotValueError(CustomerServiceAgentException):
+    """槽位异常基类
+    
+    所有槽位相关异常的基类。
+    """
+    pass
+
+
 # ======================Tracker Store相关异常======================
 
 class TrackerStoreException(CustomerServiceAgentException):
@@ -129,3 +139,4 @@ class LLMRateLimitError(LLMException):
     当超过API调用速率限制时抛出。
     """
     pass
+

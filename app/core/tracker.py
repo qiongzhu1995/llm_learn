@@ -398,5 +398,21 @@ class DialogueStateTracker:
             "completed": completed,
         })
         self.updated_at = current_time
+    
+    def add_command(self,command:dict[str,Any]) -> None:
+        """ 添加生成的命令到当前轮次"""
+        if self._current_turn is None:
+            self._current_turn = DialogueTurn()
+        
+        self._current_turn.commands.append(command)
+        self.updated_at = time.time()
+    
+    def add_bot_message(self, message:BotMessage) -> None:
+        """ 添加Bot响应消息 """
+        if self._current_turn is None:
+            self._current_turn = DialogueTurn()
+        
+        self._current_turn.bot_messages.append(message)
+        self.updated_at = time.time()
 
    

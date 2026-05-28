@@ -24,6 +24,12 @@
 - `app/policies/enterprise_search_policy.py`：切换为模板渲染方式构建提示词，移除旧字符串 `.format()` 路径。
 - `app/core/tracker.py`：补充 `get_message_for_llm()`，为生成器提供标准化对话历史输入。
 
+### Agent 图执行链路
+
+- `app/agent/graph/state.py`、`app/agent/graph/builder.py`、`app/agent/graph/edges.py`：补全消息处理图状态定义与边路由逻辑，完善图构建入口。
+- `app/agent/graph/nodes/understand.py`、`app/agent/graph/nodes/policy.py`、`app/agent/graph/nodes/action.py`、`app/agent/graph/nodes/guard.py`、`app/agent/graph/nodes/response.py`：实现节点级处理流程，串联理解、策略、动作与响应输出。
+- `app/agent/agent.py`、`app/dialogue_understanding/processor/command_processor.py`：接入图执行链路与命令处理主流程，统一入口调用路径。
+
 ---
 
 ## 2026-05-27

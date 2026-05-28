@@ -155,6 +155,39 @@ class Command(ABC):
             return False
         return self.as_dict() == other.as_dict()
     
+    def __repr__(self) -> str:
+        """返回命令对象的表示字符串 用于调试和日志记录"""
+        return f"{self.__class__.__name__}({self.as_dict()})"
+    
+@staticmethod
+def command_from_dict(data:dict[str,Any]) -> Command:
+    """从字典创建命令对象。
+    
+    根据字典中的command字段确定命令类型，然后创建对应的命令对象"""
+    command_name = data.get("command")
+    if not command_name:
+        raise ValueError("字典中没有command字段")
+    
+    command_class = get_command_class(command_name)
+    if command_class is None:
+        raise ValueError(f"未找到命令类: {command_name}")
+    
+    return command_class.from_dict(data)
+
+def parse_command_from_text(text:str) -> Optional["Command"]:
+    """从文本解析命令 尝试使用所有已注册的命令类的正则模式解析文本"""
+    text = text.strip()
+    for command_class in _COMMAND_REGISTRY.values():
+        try:
+            command = command_class.from_dsl(text)
+            if command is not None:
+                return command
+        except (NotImplementedError,ValueError):
+            continue
+    return None
+
+__all__ = ["Command","register_command","get_command_class","get_all_command_classes","command_from_dict","parse_command_from_text"]
+
 
 
         

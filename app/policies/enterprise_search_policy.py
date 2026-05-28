@@ -60,9 +60,6 @@ class EnterpriseSearchPolicy(Policy):
     DEFAULT_PRIORITY = 50
     RAG_PROMPT_FILE = settings.prompts.rag_prompt_file
     CHITCHAT_PROMPT_FILE = settings.prompts.chitchat_prompt_file
-
-    _rag_prompt:str = load_prompt(RAG_PROMPT_FILE)
-    _chitchat_prompt:str = load_prompt(CHITCHAT_PROMPT_FILE)
     def __init__(self, 
                  config:Optional[EnterpriseSearchPolicyConfig] = None,
                  llm_client:Optional[LLMClient] = None,
@@ -447,7 +444,7 @@ class EnterpriseSearchPolicy(Policy):
             logger.info(f"[EnterpriseSearchPolicy]构建上下文完成,上下文: {context}")
 
             # 构建RAG提示词
-            rag_prompt = self._rag_prompt.format(context=context,question=question)
+            rag_prompt = load_prompt(self.RAG_PROMPT_FILE, context=context, question=question)
 
             # 调用LLM生成回答
             response = await self.llm_client.complete([
@@ -465,7 +462,7 @@ class EnterpriseSearchPolicy(Policy):
     
     async def _generate_chitchat_answer(self, message:str) -> Optional[str]:
         """ 生成闲聊回答。"""
-        prompt = self._chitchat_prompt.format(message=message)
+        prompt = load_prompt(self.CHITCHAT_PROMPT_FILE, message=message)
 
         logger.info(f"[EnterpriseSearchPolicy]开始生成闲聊回答: {message} ...")
         try:

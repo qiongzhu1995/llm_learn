@@ -42,6 +42,19 @@ class BusinessConfig:
     default_sender_id: str = "default"
     default_encoding: str = "utf-8"
 
+@dataclass
+class LLMConfig:
+    """LLM配置。"""
+    model_type: str = "openai"
+    model_name: str = "gpt-4o-mini"
+    api_key: str = "${oc.env:LLM_API_KEY,''}"
+    api_base: str = "${oc.env:LLM_API_BASE,'https://api.openai.com/v1'}"
+    api_temperature: float = 0.7
+    max_tokens: int = 256
+    timeout: int = 30
+    enable_thinking: bool = False
+
+
 
 @dataclass
 class ActionsConfig:
@@ -85,8 +98,9 @@ class PromptConfig:
     """提示词配置。"""
 
     path: str = "${oc.env:PROMPTS_DIR,docs/prompts}"
-    rag_prompt_file: str = "rag_prompt.prompt"
-    chitchat_prompt_file: str = "chitchat_prompt.prompt"
+    rag_prompt_file: str = "rag_prompt.jinja2"
+    chitchat_prompt_file: str = "chitchat_prompt.jinja2"
+    command_prompt_file: str = "command_prompt.jinja2"
     default_init_response: str = "你好，我是客服小助手，有什么可以帮您的？" # 默认初始化响应
     chitchat_init_response: str = "您好，很开心和您聊天，请问有什么可以帮您的？" # 闲聊初始化响应
     handoff_text: str = "好的，正在为您转接人工客服，请稍候..." # 人工转接响应
@@ -121,6 +135,7 @@ class Settings:
     mysql: MysqlConfig = field(default_factory=MysqlConfig)
     prompts: PromptConfig = field(default_factory=PromptConfig)
     degradation: DegradationReasonConfig = field(default_factory=DegradationReasonConfig)
+    llm: LLMConfig = field(default_factory=LLMConfig)
     app_env: str = "${oc.env:APP_ENV,dev}"
     log_level: str = "${oc.env:LOG_LEVEL,INFO}"
     log_enable_file: bool = "${oc.env:LOG_ENABLE_FILE,true}"

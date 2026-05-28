@@ -228,7 +228,36 @@ class DialogueStateTracker:
             turns = turns[-max_turns:]
         
         return [turn.to_dict() for turn in turns]
-        
+    
+    def get_message_for_llm(self,max_turns:int=10) -> list[dict[str,str]]:
+        """
+        获取用于LLM的消息列表
+        Args:
+            max_turns: 最大返回的轮次数
+        Returns:
+            list[dict[str,str]]: 消息列表，每个元素是一个字典，包含用户消息和Bot响应
+        """
+        messages = []
+        turns = self.dialogue_turns[-max_turns:] if max_turns else self.dialogue_turns
+        for turn in turns:
+            if turn.user_message:
+                messages.append({
+                    "role": "user",
+                    "content": turn.user_message.text,
+                })
+            for bot_msg in turn.bot_messages:
+                if bot_msg.text:
+                    messages.append({
+                        "role": "assistant",
+                        "content": bot_msg.text,
+                    })
+        # 添加当前轮次的用户消息
+        if self._current_turn and self._current_turn.user_message:
+            messages.append({
+                "role": "user",
+                "content": self._current_turn.user_message.text,
+            })
+        return messages
     def finalize_turn(self) -> None:
         """
         完成当前轮次

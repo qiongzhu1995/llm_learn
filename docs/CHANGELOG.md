@@ -4,6 +4,28 @@
 
 ---
 
+## 2026-05-28
+
+### 生成器与命令解析
+
+- `app/dialogue_understanding/generator/base_generator.py`、`app/dialogue_understanding/generator/llm_generator.py`、`app/dialogue_understanding/generator/command_parser.py`、`app/dialogue_understanding/generator/prompt_builder.py`：补全命令生成链路，实现模板构建、LLM生成、命令解析与结果校验的完整流程。
+- `app/dialogue_understanding/commands/base.py`、`app/dialogue_understanding/commands/answer_commands.py`、`app/dialogue_understanding/commands/flow_commands.py`、`app/dialogue_understanding/commands/session_commands.py`、`app/dialogue_understanding/commands/slot_commands.py`：补充命令对象构造/解析能力，统一命令注册和文本解析入口。
+- `app/dialogue_understanding/flow/__init__.py`：补齐 Flow 相关公开导出，简化生成器与策略侧导入。
+
+### 提示词模板与加载
+
+- `docs/prompts/rag_prompt.jinja2`、`docs/prompts/chitchat_prompt.jinja2`、`docs/prompts/command_prompt.jinja2`：提示词模板统一迁移到 Jinja2 格式并新增命令生成模板。
+- `app/shared/load_prompt.py`：升级为 Jinja2 模板渲染加载器，支持上下文变量传入。
+- `app/shared/config.py`：新增/调整 LLM 与提示词模板配置项（含 `command_prompt_file`），统一模板与模型配置入口。
+- `docs/prompts/rag_prompt.prompt`、`docs/prompts/chitchat_prompt.prompt`：移除旧 `.prompt` 模板文件。
+
+### 策略与状态
+
+- `app/policies/enterprise_search_policy.py`：切换为模板渲染方式构建提示词，移除旧字符串 `.format()` 路径。
+- `app/core/tracker.py`：补充 `get_message_for_llm()`，为生成器提供标准化对话历史输入。
+
+---
+
 ## 2026-05-27
 
 ### 对话命令与策略

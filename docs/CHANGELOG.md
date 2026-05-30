@@ -23,6 +23,13 @@
 - `app/core/tracker.py`：补充状态跟踪辅助能力，适配 Agent/生成器链路的新上下文读取需求。
 - `app/shared/exceptions.py`：补充配置加载相关异常定义，提升错误分类与诊断可读性。
 
+### CLI 与 API 运行入口
+
+- `app/cli/init.py`、`app/cli/run.py`、`app/cli/inspect.py`、`app/cli/export.py`：补全命令行初始化、运行、导出与巡检能力，统一 CLI 执行入口行为。
+- `app/api/server.py`、`app/api/templates/inspect.html`：完善 API 服务端与巡检页面模板，增强运行态观测与交互支持。
+- `app/channels/base_channel.py`：补充通道基类能力，统一消息通道对外契约。
+- `app/shared/config.py`：新增/扩展 CLI 与 API 相关配置项，保障运行参数可配置化。
+
 ---
 
 ## 2026-05-28

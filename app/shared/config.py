@@ -24,11 +24,14 @@ class EnvKeysConfig:
     service_name: str = "SERVICE_NAME"
 
 
+
 @dataclass
 class DefaultsConfig:
     """默认值配置。"""
 
     app_env: str = "dev"
+    api_host: str = "0.0.0.0"
+    api_port: int = 9090
     log_level_dev: str = "DEBUG"
     log_level_prod: str = "INFO"
     log_enable_file: str = "true"

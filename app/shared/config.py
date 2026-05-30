@@ -32,7 +32,13 @@ class DefaultsConfig:
     log_level_dev: str = "DEBUG"
     log_level_prod: str = "INFO"
     log_enable_file: str = "true"
-    service_name: str = "customer-service-agent"
+    service_name: str = "customer-service-agent" 
+    default_config_path: str = "config.yml" # 默认配置路径  
+    default_domain_path: str = "domain.yml" # 默认Domain路径
+    default_endpoints_path: str = "endpoints.yml" # 默认Endpoints路径
+    default_data_path: str = "data" # 默认数据路径
+    default_flows_path: str = "flows" # 默认Flows路径
+    default_action_path: str = "actions" # 默认Actions路径
 
 
 @dataclass
@@ -53,6 +59,7 @@ class LLMConfig:
     max_tokens: int = 256
     timeout: int = 30
     enable_thinking: bool = False
+    temperature: float = 0.0
 
 
 
@@ -91,6 +98,13 @@ class MysqlConfig:
     password: str = "${oc.env:DB_PASSWORD,''}"
     db: str = "${oc.env:DB_NAME,ecs}"
     tracker_table_name: str = "${oc.env:DB_TRACKER_TABLE_NAME,trackers}"
+
+@dataclass
+class TrackerStoreConfig:
+    """Tracker存储配置。"""
+    json_type: str = "json"
+    mysql_type: str = "mysql"
+    memory_type: str = "memory"
 
 
 @dataclass
@@ -136,6 +150,7 @@ class Settings:
     prompts: PromptConfig = field(default_factory=PromptConfig)
     degradation: DegradationReasonConfig = field(default_factory=DegradationReasonConfig)
     llm: LLMConfig = field(default_factory=LLMConfig)
+    tracker_store: TrackerStoreConfig = field(default_factory=TrackerStoreConfig)
     app_env: str = "${oc.env:APP_ENV,dev}"
     log_level: str = "${oc.env:LOG_LEVEL,INFO}"
     log_enable_file: bool = "${oc.env:LOG_ENABLE_FILE,true}"

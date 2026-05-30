@@ -30,7 +30,7 @@ class InvalidConfigException(ConfigurationException):
     
     当配置值不符合预期格式或范围时抛出。
     """
-    pass
+    pass 
 
 
 class MissingConfigException(ConfigurationException):

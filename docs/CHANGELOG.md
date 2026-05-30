@@ -4,6 +4,27 @@
 
 ---
 
+## 2026-05-30
+
+### Agent 主流程与处理链路
+
+- `app/agent/agent.py`、`app/agent/message_processor.py`：完善 Agent 主执行流程与消息处理编排，统一消息进入后的处理路径与状态传递。
+- `app/agent/graph/__init__.py`、`app/dialogue_understanding/generator/__init__.py`、`app/dialogue_understanding/processor/__init__.py`、`app/policies/__init__.py`：补齐模块导出，统一各子模块对外入口。
+
+### 配置与模型存储
+
+- `app/shared/load_config.py`：新增配置加载模块，支持 YAML 读取、环境变量替换、分段配置解析与默认值回退。
+- `app/shared/config.py`：扩展配置结构，补齐与加载模块及 Agent 链路相关的配置项。
+- `app/training/model_storage.py`：完善模型存储读写与元数据管理逻辑，增强训练产物持久化能力。
+- `app/core/stores/__init__.py`：统一存储层对外导出，便于上层模块按入口引入。
+
+### 状态与异常
+
+- `app/core/tracker.py`：补充状态跟踪辅助能力，适配 Agent/生成器链路的新上下文读取需求。
+- `app/shared/exceptions.py`：补充配置加载相关异常定义，提升错误分类与诊断可读性。
+
+---
+
 ## 2026-05-28
 
 ### 生成器与命令解析

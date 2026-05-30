@@ -414,5 +414,18 @@ class DialogueStateTracker:
         
         self._current_turn.bot_messages.append(message)
         self.updated_at = time.time()
+    
+    def restart(self) -> None:
+        """ 重置Tracker 清空对话历史、槽位、Flow历史等 """
+        self.dialogue_turns.clear()
+        self._current_turn = None
+        self.reset_slot()
+        self.dialogue_stack.clear()
+        self.latest_message = None
+        self.latest_action_name = settings.actions.listen
+        self.follow_action = None
+        self.paused = False
+        self.updated_at = time.time()
+    
 
    
